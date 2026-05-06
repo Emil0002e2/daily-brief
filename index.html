@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Brief">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>Daily Brief</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #ffffff;
+    --bg-card: #f5f5f5;
+    --bg-card-hover: #ebebeb;
+    --text: #000000;
+    --text-secondary: #666666;
+    --text-tertiary: #999999;
+    --border: #e0e0e0;
+    --accent: #000000;
+    --accent-soft: rgba(0,0,0,0.06);
+    --timer-track: #e0e0e0;
+    --timer-fill: #000000;
+    --safe-top: env(safe-area-inset-top, 20px);
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --bg-card: #111111;
+      --bg-card-hover: #1a1a1a;
+      --text: #ffffff;
+      --text-secondary: #999999;
+      --text-tertiary: #666666;
+      --border: #222222;
+      --accent: #ffffff;
+      --accent-soft: rgba(255,255,255,0.06);
+      --timer-track: #333333;
+      --timer-fill: #ffffff;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: calc(var(--safe-top) + 12px) 20px calc(var(--safe-bottom) + 24px);
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-item {
+    flex: 1;
+    padding: 12px 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav-item.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Header */
+  .greeting {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  .date-display {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+    line-height: 1.4;
+  }
+
+  /* Section */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+  }
+
+  /* Event Cards */
+  .event-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 8px;
+    transition: background 0.15s ease;
+  }
+
+  .event-card:active {
+    background: var(--bg-card-hover);
+  }
+
+  .event-time {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .event-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+  }
+
+  .event-location {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .event-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  .spacer { height: 32px; }
+  .spacer-sm { height: 16px; }
+
+  /* Briefing */
+  .briefing-card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 8px;
+  }
+
+  .briefing-text {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+
+  .briefing-text strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* Mail Cards */
+  .mail-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 8px;
+    transition: background 0.15s ease;
+  }
+
+  .mail-card:active {
+    background: var(--bg-card-hover);
+  }
+
+  .mail-sender {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .mail-subject {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+
+  .mail-snippet {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .mail-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--bg);
+    margin-bottom: 8px;
+  }
+
+  /* Divider */
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-tertiary);
+    font-size: 14px;
+  }
+
+  /* Week overview */
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+
+  .week-day {
+    text-align: center;
+    padding: 8px 0;
+    border-radius: 10px;
+    cursor: default;
+  }
+
+  .week-day-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .week-day-num {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .week-day.today {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .week-day.today .week-day-label {
+    color: var(--bg);
+    opacity: 0.6;
+  }
+
+  .week-day.has-event .week-day-num::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin: 3px auto 0;
+  }
+
+  .week-day.today.has-event .week-day-num::after {
+    background: var(--bg);
+  }
+
+  /* Pomodoro */
+  .timer-section {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+  }
+
+  .timer-section.active {
+    display: flex;
+  }
+
+  .timer-ring-container {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    margin-bottom: 32px;
+  }
+
+  .timer-ring {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .timer-track {
+    fill: none;
+    stroke: var(--timer-track);
+    stroke-width: 4;
+  }
+
+  .timer-fill {
+    fill: none;
+    stroke: var(--timer-fill);
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+  }
+
+  .timer-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .timer-time {
+    font-size: 56px;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .timer-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+
+  .timer-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .timer-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s ease;
+  }
+
+  .timer-btn:active {
+    transform: scale(0.95);
+  }
+
+  .timer-btn.primary {
+    width: 72px;
+    height: 72px;
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 22px;
+  }
+
+  .timer-presets {
+    display: flex;
+    gap: 8px;
+  }
+
+  .preset-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s ease;
+  }
+
+  .preset-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  .preset-btn:active {
+    transform: scale(0.96);
+  }
+
+  .sessions-count {
+    margin-top: 24px;
+    font-size: 13px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.02em;
+  }
+
+  /* Page views */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Fade in */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-in {
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  .delay-1 { animation-delay: 0.05s; opacity: 0; }
+  .delay-2 { animation-delay: 0.1s; opacity: 0; }
+  .delay-3 { animation-delay: 0.15s; opacity: 0; }
+  .delay-4 { animation-delay: 0.2s; opacity: 0; }
+  .delay-5 { animation-delay: 0.25s; opacity: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <nav class="nav">
+    <div class="nav-item active" data-page="today">Heute</div>
+    <div class="nav-item" data-page="week">Woche</div>
+    <div class="nav-item" data-page="focus">Focus</div>
+  </nav>
+
+  <!-- TODAY PAGE -->
+  <div class="page active" id="page-today">
+    <div class="greeting animate-in">Mittwoch</div>
+    <div class="date-display animate-in delay-1">6. Mai 2026</div>
+    <div class="subtitle animate-in delay-2">Guten Morgen, Emil.</div>
+
+    <div class="spacer-sm"></div>
+
+    <div class="section-label animate-in delay-3">Dein Briefing</div>
+    <div class="briefing-card animate-in delay-4">
+      <div class="briefing-text">
+        <strong>Heute ist Lilis Geburtstag</strong> — vergiss nicht zu gratulieren. Sonst ist der Tag frei, kein Videodreh, keine Calls. Nutz den Tag produktiv.<br><br>
+        Am <strong>Wochenende</strong> stehen zwei Vero-Videotermine an (So + Mo) plus der <strong>Hornlauf-Videodreh</strong>. Ab Montag bist du in <strong>Achenkirch</strong> für Ego 4 you — pack rechtzeitig.
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="section-label">Posteingang</div>
+    <div class="mail-card animate-in delay-5">
+      <div class="mail-badge">Wichtig</div>
+      <div class="mail-sender">FH Kufstein</div>
+      <div class="mail-subject">Studienplatz zuerkannt!</div>
+      <div class="mail-snippet">Herzlichen Glückwunsch — du hast einen Studienplatz im Bachelor Marketing &amp; Kommunikationsmanagement (berufsbegleitend) erhalten.</div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="section-label">Heute</div>
+    <div class="event-card">
+      <div class="event-time">Ganztägig</div>
+      <div class="event-title"><span class="event-dot"></span>Lili Geburtstag 😇</div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="section-label">Nächste Termine</div>
+    <div class="event-card">
+      <div class="event-time">Sonntag, 10. Mai</div>
+      <div class="event-title"><span class="event-dot"></span>Vero Videotermin</div>
+    </div>
+    <div class="event-card">
+      <div class="event-time">Sonntag, 10. Mai</div>
+      <div class="event-title"><span class="event-dot"></span>Hornlauf Video</div>
+    </div>
+    <div class="event-card">
+      <div class="event-time">Montag, 11. Mai</div>
+      <div class="event-title"><span class="event-dot"></span>Ego 4 you</div>
+      <div class="event-location">Achenkirch, Tirol</div>
+    </div>
+  </div>
+
+  <!-- WEEK PAGE -->
+  <div class="page" id="page-week">
+    <div class="greeting">KW 19</div>
+    <div class="date-display">Diese Woche</div>
+    <div class="subtitle">4 Termine diese Woche. Videotermine am Wochenende, Ego 4 you am Montag in Achenkirch.</div>
+
+    <div class="spacer-sm"></div>
+
+    <div class="week-grid">
+      <div class="week-day">
+        <div class="week-day-label">Mo</div>
+        <div class="week-day-num">4</div>
+      </div>
+      <div class="week-day">
+        <div class="week-day-label">Di</div>
+        <div class="week-day-num">5</div>
+      </div>
+      <div class="week-day today has-event">
+        <div class="week-day-label">Mi</div>
+        <div class="week-day-num">6</div>
+      </div>
+      <div class="week-day">
+        <div class="week-day-label">Do</div>
+        <div class="week-day-num">7</div>
+      </div>
+      <div class="week-day">
+        <div class="week-day-label">Fr</div>
+        <div class="week-day-num">8</div>
+      </div>
+      <div class="week-day">
+        <div class="week-day-label">Sa</div>
+        <div class="week-day-num">9</div>
+      </div>
+      <div class="week-day has-event">
+        <div class="week-day-label">So</div>
+        <div class="week-day-num">10</div>
+      </div>
+    </div>
+
+    <div class="section-label">Mittwoch, 6. Mai</div>
+    <div class="event-card">
+      <div class="event-time">Ganztägig</div>
+      <div class="event-title"><span class="event-dot"></span>Lili Geburtstag 😇</div>
+    </div>
+
+    <div class="spacer-sm"></div>
+
+    <div class="section-label">Sonntag, 10. Mai</div>
+    <div class="event-card">
+      <div class="event-time">Ganztägig</div>
+      <div class="event-title"><span class="event-dot"></span>Vero Videotermin</div>
+    </div>
+    <div class="event-card">
+      <div class="event-time">Ganztägig</div>
+      <div class="event-title"><span class="event-dot"></span>Hornlauf Video</div>
+    </div>
+
+    <div class="spacer-sm"></div>
+
+    <div class="section-label">Montag, 11. Mai</div>
+    <div class="event-card">
+      <div class="event-time">Ganztägig</div>
+      <div class="event-title"><span class="event-dot"></span>Ego 4 you</div>
+      <div class="event-location">Achenkirch, Tirol</div>
+    </div>
+    <div class="event-card">
+      <div class="event-time">Ganztägig</div>
+      <div class="event-title"><span class="event-dot"></span>Vero Videotermin</div>
+    </div>
+  </div>
+
+  <!-- FOCUS PAGE -->
+  <div class="page" id="page-focus">
+    <div class="greeting">Pomodoro</div>
+    <div class="date-display">Focus Timer</div>
+    <div class="subtitle">Konzentrier dich. Eine Session nach der anderen.</div>
+
+    <div class="timer-section active">
+      <div class="timer-ring-container">
+        <svg class="timer-ring" viewBox="0 0 260 260">
+          <circle class="timer-track" cx="130" cy="130" r="120"/>
+          <circle class="timer-fill" id="timerFill" cx="130" cy="130" r="120"
+            stroke-dasharray="753.98"
+            stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-display">
+          <div class="timer-time" id="timerTime">25:00</div>
+          <div class="timer-label" id="timerLabel">Bereit</div>
+        </div>
+      </div>
+
+      <div class="timer-controls">
+        <button class="timer-btn" id="btnReset" aria-label="Reset">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+        </button>
+        <button class="timer-btn primary" id="btnPlay" aria-label="Start">
+          <svg id="iconPlay" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="6,3 20,12 6,21"/>
+          </svg>
+          <svg id="iconPause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+            <rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/>
+          </svg>
+        </button>
+        <button class="timer-btn" id="btnSkip" aria-label="Skip">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="timer-presets">
+        <button class="preset-btn active" data-minutes="25">25 min</button>
+        <button class="preset-btn" data-minutes="5">5 min</button>
+        <button class="preset-btn" data-minutes="15">15 min</button>
+        <button class="preset-btn" data-minutes="50">50 min</button>
+      </div>
+
+      <div class="sessions-count" id="sessionsCount">0 Sessions heute</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Navigation
+  const navItems = document.querySelectorAll('.nav-item');
+  const pages = document.querySelectorAll('.page');
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      navItems.forEach(n => n.classList.remove('active'));
+      pages.forEach(p => p.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('page-' + item.dataset.page).classList.add('active');
+    });
+  });
+
+  // Pomodoro Timer
+  const CIRCUMFERENCE = 2 * Math.PI * 120;
+  const timerFill = document.getElementById('timerFill');
+  const timerTime = document.getElementById('timerTime');
+  const timerLabel = document.getElementById('timerLabel');
+  const btnPlay = document.getElementById('btnPlay');
+  const btnReset = document.getElementById('btnReset');
+  const btnSkip = document.getElementById('btnSkip');
+  const iconPlay = document.getElementById('iconPlay');
+  const iconPause = document.getElementById('iconPause');
+  const sessionsCount = document.getElementById('sessionsCount');
+  const presetBtns = document.querySelectorAll('.preset-btn');
+
+  let totalSeconds = 25 * 60;
+  let remaining = totalSeconds;
+  let running = false;
+  let interval = null;
+  let sessions = parseInt(localStorage.getItem('pomodoro_sessions_' + new Date().toDateString()) || '0');
+
+  sessionsCount.textContent = sessions + ' Session' + (sessions !== 1 ? 's' : '') + ' heute';
+
+  function updateDisplay() {
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    timerTime.textContent = m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+    const progress = 1 - (remaining / totalSeconds);
+    timerFill.style.strokeDashoffset = CIRCUMFERENCE * (1 - progress);
+  }
+
+  function startTimer() {
+    running = true;
+    iconPlay.style.display = 'none';
+    iconPause.style.display = 'block';
+    timerLabel.textContent = 'Fokus';
+    interval = setInterval(() => {
+      remaining--;
+      updateDisplay();
+      if (remaining <= 0) {
+        clearInterval(interval);
+        running = false;
+        iconPlay.style.display = 'block';
+        iconPause.style.display = 'none';
+        timerLabel.textContent = 'Fertig!';
+        sessions++;
+        localStorage.setItem('pomodoro_sessions_' + new Date().toDateString(), sessions);
+        sessionsCount.textContent = sessions + ' Session' + (sessions !== 1 ? 's' : '') + ' heute';
+        if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+      }
+    }, 1000);
+  }
+
+  function pauseTimer() {
+    running = false;
+    clearInterval(interval);
+    iconPlay.style.display = 'block';
+    iconPause.style.display = 'none';
+    timerLabel.textContent = 'Pausiert';
+  }
+
+  function resetTimer() {
+    clearInterval(interval);
+    running = false;
+    remaining = totalSeconds;
+    iconPlay.style.display = 'block';
+    iconPause.style.display = 'none';
+    timerLabel.textContent = 'Bereit';
+    updateDisplay();
+  }
+
+  btnPlay.addEventListener('click', () => {
+    if (running) pauseTimer();
+    else startTimer();
+  });
+
+  btnReset.addEventListener('click', resetTimer);
+
+  btnSkip.addEventListener('click', () => {
+    remaining = 0;
+    updateDisplay();
+    clearInterval(interval);
+    running = false;
+    iconPlay.style.display = 'block';
+    iconPause.style.display = 'none';
+    timerLabel.textContent = 'Übersprungen';
+  });
+
+  presetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      presetBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      totalSeconds = parseInt(btn.dataset.minutes) * 60;
+      resetTimer();
+    });
+  });
+
+  updateDisplay();
+</script>
+</body>
+</html>
